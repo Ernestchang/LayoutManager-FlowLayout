@@ -40,7 +40,10 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         final ProductHolder productHolder = (ProductHolder) holder;
         Product.Classify classify = classifies.get(position);
 
-        final FlowLayoutManager flowLayoutManager = new FlowLayoutManager();
+        final FlowLayoutManager flowLayoutManager = new FlowLayoutManager(classify.lines);
+
+        Log.e("ernest", "classify.title:" + classify.title + ",classify.lines:" + classify.lines);
+
         productHolder.title.setText(classify.title);
         if (productHolder.itemView.getTag() == null) {
             productHolder.des.addItemDecoration(new SpaceItemDecoration(dp2px(10)));

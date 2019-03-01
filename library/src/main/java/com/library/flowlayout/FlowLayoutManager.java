@@ -39,9 +39,17 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
     //保存所有的Item的上下左右的偏移量信息
     private SparseArray<Rect> allItemFrames = new SparseArray<>();
 
+    private int showLines = 0;
+
     public FlowLayoutManager() {
         //设置主动测量规则,适应recyclerView高度为wrap_content
         setAutoMeasureEnabled(true);
+    }
+
+    public FlowLayoutManager(int showLines) {
+        //设置主动测量规则,适应recyclerView高度为wrap_content
+        setAutoMeasureEnabled(true);
+        this.showLines = showLines;
     }
 
     //每个item的定义
@@ -92,7 +100,6 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
     //该方法主要用来获取每一个item在屏幕上占据的位置
     @Override
     public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
-        Log.d(TAG, "onLayoutChildren");
         totalHeight = 0;
         int cuLineTop = top;
         //当前行使用的宽度
@@ -124,7 +131,6 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
         }
 
         for (int i = 0; i < getItemCount(); i++) {
-            Log.d(TAG, "index:" + i);
             View childAt = recycler.getViewForPosition(i);
             if (View.GONE == childAt.getVisibility()) {
                 continue;
@@ -132,8 +138,10 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
             measureChildWithMargins(childAt, 0, 0);
             int childWidth = getDecoratedMeasuredWidth(childAt);
             int childHeight = getDecoratedMeasuredHeight(childAt);
+
             int childUseWidth = childWidth;
             int childUseHeight = childHeight;
+
             //如果加上当前的item还小于最大的宽度的话
             if (cuLineWidth + childUseWidth <= usedMaxWidth) {
                 itemLeft = left + cuLineWidth;
@@ -154,6 +162,11 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
                 formatAboveRow();
                 cuLineTop += maxHeightItem;
                 totalHeight += maxHeightItem;
+
+                if (lineRows.size() >= showLines) {
+                    break;
+                }
+
                 itemTop = cuLineTop;
                 itemLeft = left;
                 Rect frame = allItemFrames.get(i);
@@ -168,6 +181,7 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
                 row.setCuTop(cuLineTop);
                 row.setMaxHeight(maxHeightItem);
             }
+
             //不要忘了最后一行进行刷新下布局
             if (i == getItemCount() - 1) {
                 formatAboveRow();
@@ -189,6 +203,8 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
         // 当前scroll offset状态下的显示区域
         Rect displayFrame = new Rect(getPaddingLeft(), getPaddingTop() + verticalScrollOffset,
                 getWidth() - getPaddingRight(), verticalScrollOffset + (getHeight() - getPaddingBottom()));
+
+        Log.d(TAG, "fillLayout lineRows.size():" + lineRows.size());
 
         //对所有的行信息进行遍历
         for (int j = 0; j < lineRows.size(); j++) {

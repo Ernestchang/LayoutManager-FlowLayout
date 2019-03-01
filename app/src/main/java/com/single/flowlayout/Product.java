@@ -12,6 +12,7 @@ public class Product {
     static public class Classify {
         public String title;
         List<Des> des;
+        int lines;
 
         public Classify(String title, List<Des> des) {
             this.title = title;
