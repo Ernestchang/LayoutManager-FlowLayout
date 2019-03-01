@@ -40,16 +40,18 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
     private SparseArray<Rect> allItemFrames = new SparseArray<>();
 
     private int showLines = 0;
+    private IsCollapseListener mICollapseListener;
 
     public FlowLayoutManager() {
         //设置主动测量规则,适应recyclerView高度为wrap_content
         setAutoMeasureEnabled(true);
     }
 
-    public FlowLayoutManager(int showLines) {
+    public FlowLayoutManager(int showLines, IsCollapseListener callBack) {
         //设置主动测量规则,适应recyclerView高度为wrap_content
         setAutoMeasureEnabled(true);
         this.showLines = showLines;
+        this.mICollapseListener = callBack;
     }
 
     //每个item的定义
@@ -130,6 +132,7 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
             usedMaxWidth = width - left - right;
         }
 
+        boolean isCollapse = false;
         for (int i = 0; i < getItemCount(); i++) {
             View childAt = recycler.getViewForPosition(i);
             if (View.GONE == childAt.getVisibility()) {
@@ -164,6 +167,7 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
                 totalHeight += maxHeightItem;
 
                 if (lineRows.size() >= showLines) {
+                    isCollapse = true;
                     break;
                 }
 
@@ -187,8 +191,12 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
                 formatAboveRow();
                 totalHeight += maxHeightItem;
             }
-
         }
+
+        if (mICollapseListener != null) {
+            mICollapseListener.collapse(isCollapse);
+        }
+
         totalHeight = Math.max(totalHeight, getVerticalSpace());
         Log.d(TAG, "onLayoutChildren totalHeight:" + totalHeight);
         fillLayout(recycler, state);
@@ -199,13 +207,11 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
         if (state.isPreLayout() || getItemCount() == 0) { // 跳过preLayout，preLayout主要用于支持动画
             return;
         }
-
         // 当前scroll offset状态下的显示区域
         Rect displayFrame = new Rect(getPaddingLeft(), getPaddingTop() + verticalScrollOffset,
                 getWidth() - getPaddingRight(), verticalScrollOffset + (getHeight() - getPaddingBottom()));
 
         Log.d(TAG, "fillLayout lineRows.size():" + lineRows.size());
-
         //对所有的行信息进行遍历
         for (int j = 0; j < lineRows.size(); j++) {
             Row row = lineRows.get(j);
@@ -305,6 +311,10 @@ public class FlowLayoutManager extends RecyclerView.LayoutManager {
 
     public int getHorizontalSpace() {
         return self.getWidth() - self.getPaddingLeft() - self.getPaddingRight();
+    }
+
+    public interface IsCollapseListener {
+        void collapse(boolean isCollapse);
     }
 
 }

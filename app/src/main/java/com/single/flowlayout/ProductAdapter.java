@@ -38,9 +38,15 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         final ProductHolder productHolder = (ProductHolder) holder;
-        Product.Classify classify = classifies.get(position);
+        final Product.Classify classify = classifies.get(position);
 
-        final FlowLayoutManager flowLayoutManager = new FlowLayoutManager(classify.lines);
+        final FlowLayoutManager flowLayoutManager = new FlowLayoutManager(classify.lines, new FlowLayoutManager.IsCollapseListener() {
+            @Override
+            public void collapse(boolean isCollapse) {
+                productHolder.title.setText(classify.title + isCollapse);
+            }
+        });
+
 
         Log.e("ernest", "classify.title:" + classify.title + ",classify.lines:" + classify.lines);
 
